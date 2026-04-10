@@ -56,7 +56,7 @@ When a student clicks "Enroll" on a paid course, they are redirected to a dedica
 
 1. **Given** a logged-in student browsing a paid course, **When** they click "Enroll", **Then** they are redirected to the payment instructions page for that course.
 2. **Given** the student on the payment page, **When** the page loads, **Then** it clearly displays: the course name, course price, the teacher's Vodafone Cash number, and step-by-step payment instructions.
-3. **Given** a student who has sent the payment externally, **When** they click "I've Sent the Payment", **Then** their enrollment is recorded with status "Pending Approval" and they see a confirmation message.
+3. **Given** a student who has sent the payment externally, **When** they upload their transaction receipt screenshot and click "I've Sent the Payment", **Then** their enrollment is recorded with status "Pending Approval" and they see a confirmation message.
 4. **Given** a student who already has a Pending or Approved enrollment for the course, **When** they visit the course page, **Then** the Enroll button is replaced by their enrollment status.
 5. **Given** a student navigating to the payment page for a free course directly via URL, **When** the page loads, **Then** they are redirected to the standard enrollment flow.
 
@@ -137,9 +137,9 @@ A teacher with multiple active courses wants to immediately see which courses ha
 - **FR-006**: System MUST skip the payment number requirement entirely for free courses (price = 0).
 - **FR-007**: When a student clicks "Enroll" on a paid course, the system MUST redirect them to a payment instructions page.
 - **FR-008**: The payment instructions page MUST display: course name, course price, the course's Vodafone Cash number, and step-by-step instructions for completing payment via Vodafone Cash.
-- **FR-009**: Students MUST be able to confirm payment submission, which creates an enrollment record with status "Pending Approval".
+- **FR-009**: Students MUST upload a transaction receipt screenshot to confirm payment submission, which creates an enrollment record with status "Pending Approval".
 - **FR-010**: System MUST prevent a student from creating a duplicate enrollment (Pending or Approved) for the same course.
-- **FR-011**: Teachers MUST have access to a per-course enrollment dashboard listing all enrollments with student name, email, enrollment submission date, and current status.
+- **FR-011**: Teachers MUST have access to a per-course enrollment dashboard listing all enrollments with student name, email, enrollment submission date, the uploaded receipt screenshot, and current status.
 - **FR-012**: The enrollment dashboard MUST provide Approve and Deny action buttons for each Pending enrollment.
 - **FR-013**: Approving an enrollment MUST grant the student access to the course content immediately.
 - **FR-014**: Denying an enrollment MUST revoke or block the student's access to the course content.
@@ -157,7 +157,7 @@ A teacher with multiple active courses wants to immediately see which courses ha
 
 - **TeacherPaymentProfile**: Represents a teacher's saved default Vodafone Cash number. Belongs to a user with teacher role. Has one number per teacher.
 - **CoursePaymentSettings**: Stores the Vodafone Cash number assigned to a specific course and the re-submission policy flag (`allow_resubmission: boolean`). Belongs to a course. One-to-one relationship. Exists only for paid courses.
-- **Enrollment**: Records a student's enrollment attempt for a course. Attributes: student reference, course reference, status (Pending / Approved / Denied), payment_number_shown (snapshot of the Vodafone Cash number displayed to the student at confirmation time), submission timestamp, review timestamp, reviewed-by reference. Multiple Enrollment records may exist for the same (student, course) pair when re-submission is enabled (only one may be Pending or Approved at a time).
+- **Enrollment**: Records a student's enrollment attempt for a course. Attributes: student reference, course reference, status (Pending / Approved / Denied), payment_number_shown (snapshot of the Vodafone Cash number displayed to the student at confirmation time), receipt_image_url (path/reference to the uploaded transaction receipt screenshot), submission timestamp, review timestamp, reviewed-by reference. Multiple Enrollment records may exist for the same (student, course) pair when re-submission is enabled (only one may be Pending or Approved at a time).
 
 ---
 
@@ -198,3 +198,4 @@ A teacher with multiple active courses wants to immediately see which courses ha
 - Q: How should the teacher be made aware of new pending enrollments without full notification support? → A: Both (D) — a pending count badge on each course card in the teacher dashboard, AND a dedicated global "Pending Enrollments" aggregated list across all courses in the teacher dashboard.
 - Q: Should the enrollment record store a snapshot of the Vodafone Cash number the student was shown at payment time? → A: Yes (A) — the number is snapshotted into the Enrollment record (`payment_number_shown`) at confirmation time for audit and dispute-resolution purposes.
 - Q: Should the system enforce that the Vodafone Cash number starts with `010` (Vodafone Egypt only) or accept any Egyptian mobile prefix? → A: Enforce `010` prefix only (A) — numbers starting with 011, 012, or 015 cannot receive Vodafone Cash transfers and must be rejected with a clear validation error.
+- Q: To help the teacher match a pending enrollment with the actual transfer, what information must the student provide when confirming payment? → A: Require student to upload a transaction receipt screenshot.
